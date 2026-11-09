@@ -7,7 +7,7 @@ TabStationToo runs PlayStation 2 emulation in a browser tab. It is the
 around it. You bring the BIOS from your own console and disc images of your own games; nothing is
 uploaded anywhere.
 
-**Try it:** https://tabstationtoo.github.io/TabStationToo/ (desktop Chrome or Edge; Firefox works
+**Try it:** https://mariojr1317.github.io/TabStationToo2/ (desktop Chrome or Edge; Firefox works
 too).
 
 TabStationToo is built on PCSX2 and would not exist without the PCSX2 team and its contributors,
