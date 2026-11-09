@@ -1,8 +1,7 @@
 # Builds TabStationToo (pcsx2-wasm) and deploys it as a static site to this repository's GitHub
 # Pages, https://tabstationtoo.github.io/TabStationToo/ (Settings > Pages > Source: GitHub Actions).
 #
-# Runs on pushes to wasm and by hand (workflow_dispatch), only in TabStationToo/TabStationToo and
-# only for wasm: never on forks, and never on master, which mirrors PCSX2.
+# Runs on pushes to this fork's wasm branch and by hand from that branch.
 # pcsx2-wasm/README.md ("Deploying") explains it.
 
 name: Pages
@@ -30,7 +29,7 @@ defaults:
 jobs:
   build:
     name: Build and test
-    if: github.repository == 'TabStationToo/TabStationToo' && github.ref == 'refs/heads/wasm'
+    if: github.ref == 'refs/heads/wasm'
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     permissions:
