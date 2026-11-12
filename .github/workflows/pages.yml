@@ -144,7 +144,7 @@ jobs:
   deploy-pages:
     name: Deploy to GitHub Pages
     needs: build
-    if: github.repository == 'TabStationToo/TabStationToo' && github.ref == 'refs/heads/wasm'
+    if: github.ref == 'refs/heads/wasm'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
