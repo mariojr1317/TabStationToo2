@@ -157,9 +157,9 @@ static std::atomic<int> s_crisp_request{-1};
 static std::atomic<int> s_tv_shader_request{-1};
 static int s_tv_shader = 0;
 static bool s_crisp = false; // CPU thread
-// The page's internal resolution (GSConfig.UpscaleMultiplier: 1 native, 2 twice the PS2's lines), 0: no request.
+// Internal resolution in hundredths (50 = 0.5x, 75 = 0.75x, 100 = native, 200 = 2x); 0: no request.
 static std::atomic<int> s_upscale_request{0};
-static int s_upscale = 1; // CPU thread
+static float s_upscale = 1.0f; // CPU thread
 // The EE cycle rate the page asked for (EmuConfig.Speedhacks.EECycleRate: 0, or -1 to -3 to underclock the EE),
 // kCycleRateNone when there is no new request.
 static constexpr int kCycleRateNone = -128;
@@ -1706,18 +1706,21 @@ static void CheckCrispRequest(bool apply_now)
 }
 
 // The internal resolution: the hardware renderer draws at this multiple of the PS2's own size (the GS clamps it to
-// what the device's largest texture allows; the software renderer ignores it). Needs proper testing on more games.
+// what the device's largest texture allows; the software renderer ignores it). Lower scales trade sharpness for speed.
 static void CheckUpscaleRequest(bool apply_now)
 {
-	const int request = s_upscale_request.exchange(0, std::memory_order_acq_rel);
-	if (request <= 0 || request == s_upscale)
+	const int encoded_request = s_upscale_request.exchange(0, std::memory_order_acq_rel);
+	if (encoded_request <= 0)
+		return;
+	const float request = static_cast<float>(encoded_request) / 100.0f;
+	if (std::abs(request - s_upscale) < 0.001f)
 		return;
 	s_upscale = request;
 	{
 		auto lock = Host::GetSettingsLock();
-		s_settings_interface.SetFloatValue("EmuCore/GS", "upscale_multiplier", static_cast<float>(request));
+		s_settings_interface.SetFloatValue("EmuCore/GS", "upscale_multiplier", request);
 	}
-	Console.WriteLnFmt("pcsx2-wasm: internal resolution {}x", request);
+	Console.WriteLnFmt("pcsx2-wasm: internal resolution {:.2f}x", request);
 	if (apply_now && VMManager::HasValidVM())
 		VMManager::ApplySettings();
 }
@@ -2278,11 +2281,11 @@ EMSCRIPTEN_KEEPALIVE void pcsx2web_set_crisp(int crisp)
 	s_crisp_request.store(crisp ? 1 : 0, std::memory_order_release);
 }
 
-/// The internal resolution: 1 (native, as the PS2 draws) or 2 (twice the lines), applied at the next vsync or boot.
-/// Other values are ignored.
+/// Internal resolution in hundredths: 50 (0.5x), 75 (0.75x), 100 (native), or 200 (2x).
+/// Applied at the next vsync or boot. Other values are ignored.
 EMSCRIPTEN_KEEPALIVE void pcsx2web_set_upscale(int multiplier)
 {
-	if (multiplier == 1 || multiplier == 2)
+	if (multiplier == 50 || multiplier == 75 || multiplier == 100 || multiplier == 200)
 		s_upscale_request.store(multiplier, std::memory_order_release);
 }
 
