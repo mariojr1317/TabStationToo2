@@ -1597,6 +1597,11 @@ static void ParseArguments(int argc, char* argv[])
 			// Tests: "0" runs the IOP interpreter instead of the IOP JIT.
 			IopJit::g_mode = (std::string_view(argv[++i]) != "0") ? 1 : 0;
 		}
+		else if (arg == "-eejit-stats")
+		{
+			// Diagnostic run: collect hot EE blocks and interpreter fallbacks; printed when the VM stops.
+			EEJit::g_stats = true;
+		}
 		else if (arg == "-unlimited")
 		{
 			s_start_unlimited = true;
@@ -2039,6 +2044,8 @@ static void RunVM(const std::string& bios_name)
 		}
 	}
 
+	if (EEJit::g_stats)
+		EEJit::PrintStats();
 	VMManager::Shutdown(false);
 	s_memcard_status[0].store(0, std::memory_order_release);
 	s_speed.store(0.0f, std::memory_order_relaxed);
