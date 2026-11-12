@@ -10191,6 +10191,16 @@
 			subtitle(COPY.dropBlocked);
 			return;
 		}
+		// showPicker() is the browser's native file-picker entry point. Call it directly
+		// from the trusted button press; retain click() for browsers without showPicker().
+		if (typeof els.biosInput.showPicker === 'function') {
+			try {
+				els.biosInput.showPicker();
+				return;
+			} catch (err) {
+				pageLog(`The BIOS file picker could not open (${errorText(err)}); trying the standard input.`, 'warn');
+			}
+		}
 		els.biosInput.click();
 	}
 
