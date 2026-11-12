@@ -3168,6 +3168,7 @@ namespace
 			StorePcCode(pc, code);
 			FlushCyclesSlowPath();
 			WritebackAll();
+			CountStat("COP2 slow"); // Count the VU-busy path at runtime; the fast path is native.
 			CallVoid(FnIndex(d.op->interpret));
 			if (!in_delay_slot)
 				CheckPc(pc + 4);
